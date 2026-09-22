@@ -1,15 +1,59 @@
 {
   "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
   "name": "piton",
+  "word": "identifier",
   "rules": {
     "source_file": {
-      "type": "REPEAT",
-      "content": {
-        "type": "SYMBOL",
-        "name": "_line"
-      }
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_line"
+          }
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "_statement"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        }
+      ]
     },
     "_line": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "_statement"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "_newline"
+            }
+          ]
+        },
+        {
+          "type": "SYMBOL",
+          "name": "escape_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_newline"
+        }
+      ]
+    },
+    "_statement": {
       "type": "CHOICE",
       "members": [
         {
@@ -19,10 +63,6 @@
         {
           "type": "SYMBOL",
           "name": "fence"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "escape_block"
         },
         {
           "type": "SYMBOL",
@@ -55,10 +95,6 @@
         {
           "type": "SYMBOL",
           "name": "prose"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_newline"
         }
       ]
     },
@@ -125,29 +161,17 @@
               {
                 "type": "SYMBOL",
                 "name": "escape_marker"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "_newline"
               }
             ]
           }
         },
         {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "FIELD",
-              "name": "close",
-              "content": {
-                "type": "SYMBOL",
-                "name": "fence_marker"
-              }
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
+          "type": "FIELD",
+          "name": "close",
+          "content": {
+            "type": "SYMBOL",
+            "name": "fence_marker"
+          }
         }
       ]
     },
@@ -166,7 +190,7 @@
         "value": -1,
         "content": {
           "type": "PATTERN",
-          "value": "[^\\n`][^\\n]*"
+          "value": "[^\\n]*\\r?\\n"
         }
       }
     },
@@ -184,34 +208,17 @@
         {
           "type": "REPEAT",
           "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "escape_content"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "_newline"
-              }
-            ]
+            "type": "SYMBOL",
+            "name": "escape_content"
           }
         },
         {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "FIELD",
-              "name": "close",
-              "content": {
-                "type": "SYMBOL",
-                "name": "escape_marker"
-              }
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
+          "type": "FIELD",
+          "name": "close",
+          "content": {
+            "type": "SYMBOL",
+            "name": "escape_marker"
+          }
         }
       ]
     },
@@ -233,7 +240,7 @@
         "value": -1,
         "content": {
           "type": "PATTERN",
-          "value": "[^\\n]+"
+          "value": "[^\\n]*\\r?\\n"
         }
       }
     },
@@ -434,31 +441,6 @@
               "members": [
                 {
                   "type": "STRING",
-                  "value": "as"
-                },
-                {
-                  "type": "FIELD",
-                  "name": "alias",
-                  "content": {
-                    "type": "SYMBOL",
-                    "name": "keyword_name"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        },
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SEQ",
-              "members": [
-                {
-                  "type": "STRING",
                   "value": "extends"
                 },
                 {
@@ -477,14 +459,46 @@
           ]
         },
         {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "as"
+                },
+                {
+                  "type": "FIELD",
+                  "name": "alias",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "keyword_name"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
           "type": "STRING",
           "value": ":"
         }
       ]
     },
     "declaration_keyword": {
-      "type": "PATTERN",
-      "value": "[a-z][a-z0-9]*(-[a-z0-9]+)*"
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": -3,
+        "content": {
+          "type": "PATTERN",
+          "value": "[a-z][a-z0-9]*(-[a-z0-9]+)*"
+        }
+      }
     },
     "keyword_name": {
       "type": "PATTERN",
@@ -550,10 +564,6 @@
           }
         },
         {
-          "type": "STRING",
-          "value": ":"
-        },
-        {
           "type": "CHOICE",
           "members": [
             {
@@ -574,12 +584,8 @@
     "key": {
       "type": "TOKEN",
       "content": {
-        "type": "PREC",
-        "value": 1,
-        "content": {
-          "type": "PATTERN",
-          "value": "[^\\s:{}\\[\\]#@$][^\\s:]*"
-        }
+        "type": "PATTERN",
+        "value": "[^\\s:{}\\[\\]#@$][^\\s:]*:"
       }
     },
     "type_constraint": {
@@ -587,7 +593,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "::"
+          "value": ":"
         },
         {
           "type": "CHOICE",
@@ -629,6 +635,10 @@
               "type": "BLANK"
             }
           ]
+        },
+        {
+          "type": "STRING",
+          "value": ":"
         }
       ]
     },
@@ -768,6 +778,10 @@
           {
             "type": "SYMBOL",
             "name": "text"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "punctuation"
           }
         ]
       }
@@ -1097,8 +1111,23 @@
           {
             "type": "SYMBOL",
             "name": "text"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "punctuation"
           }
         ]
+      }
+    },
+    "punctuation": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": -3,
+        "content": {
+          "type": "PATTERN",
+          "value": "[`$#@{}\\[\\]]"
+        }
       }
     },
     "text": {
@@ -1108,7 +1137,7 @@
         "value": -2,
         "content": {
           "type": "PATTERN",
-          "value": "[^\\n{}$#@\\[\\]]+"
+          "value": "[^\\s`{}$#@\\[\\]][^\\n{}$#@\\[\\]]*"
         }
       }
     }
@@ -1119,12 +1148,7 @@
       "value": "[ \\t]"
     }
   ],
-  "conflicts": [
-    [
-      "property",
-      "_inline"
-    ]
-  ],
+  "conflicts": [],
   "precedences": [],
   "externals": [],
   "inline": [],
