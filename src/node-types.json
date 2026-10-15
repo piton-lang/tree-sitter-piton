@@ -125,6 +125,16 @@
           }
         ]
       },
+      "info": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "fence_info",
+            "named": true
+          }
+        ]
+      },
       "language": {
         "multiple": false,
         "required": false,
@@ -151,7 +161,7 @@
       "required": false,
       "types": [
         {
-          "type": "escape_marker",
+          "type": "escape_block",
           "named": true
         },
         {
@@ -766,6 +776,10 @@
   {
     "type": "false",
     "named": false
+  },
+  {
+    "type": "fence_info",
+    "named": true
   },
   {
     "type": "fence_language",
